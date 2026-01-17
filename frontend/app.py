@@ -694,7 +694,7 @@ if st.session_state.page == 'home':
     """, unsafe_allow_html=True)
     
     # Documentation link
-    st.markdown("<div style='text-align: center; padding: 20px;'><a href='https://github.com' target='_blank' style='color: #57534E; text-decoration: none; font-size: 14px;'>📖 View Documentation on GitHub →</a></div>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align: center; padding: 20px;'><a href='https://github.com/SmridhVarma/AuditFlow' target='_blank' style='color: #A3A3A3; text-decoration: none; font-size: 14px;'>📖 View Documentation on GitHub →</a></div>", unsafe_allow_html=True)
     
     # Footer
     st.markdown("""
