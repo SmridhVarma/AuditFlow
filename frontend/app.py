@@ -36,7 +36,7 @@ def check_service_health():
     
     for url in [ROUTER_URL, AGENT_URL, REPORTER_URL]:
         try:
-            resp = requests.get(f"{url}/health", timeout=0.3)
+            resp = requests.get(f"{url}/health", timeout=5)  # Increased timeout for cloud
             if resp.status_code == 200:
                 services_up += 1
         except:
@@ -55,27 +55,27 @@ st.markdown("""
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
     
     :root {
-        --bg-primary: #FDFBF7;
-        --bg-secondary: #F7F4EF;
-        --bg-card: #FFFFFF;
-        --bg-hover: #F0EDE8;
+        --bg-primary: #0F0F0F;
+        --bg-secondary: #1A1A1A;
+        --bg-card: #1E1E1E;
+        --bg-hover: #2A2A2A;
         
-        --text-primary: #1C1917;
-        --text-secondary: #57534E;
-        --text-muted: #A8A29E;
+        --text-primary: #F5F5F5;
+        --text-secondary: #A3A3A3;
+        --text-muted: #6B6B6B;
         
-        --teal: #0D9488;
-        --teal-light: #14B8A6;
+        --teal: #14B8A6;
+        --teal-light: #2DD4BF;
         --green: #22C55E;
         --amber: #F59E0B;
-        --red: #DC2626;
-        --blue: #2563EB;
-        --purple: #7C3AED;
+        --red: #EF4444;
+        --blue: #3B82F6;
+        --purple: #8B5CF6;
         
-        --border: #E7E5E4;
-        --border-hover: #D6D3D1;
-        --shadow: 0 1px 3px rgba(0,0,0,0.08);
-        --shadow-lg: 0 10px 40px rgba(0,0,0,0.1);
+        --border: #2A2A2A;
+        --border-hover: #3A3A3A;
+        --shadow: 0 1px 3px rgba(0,0,0,0.3);
+        --shadow-lg: 0 10px 40px rgba(0,0,0,0.4);
     }
     
     * { 
