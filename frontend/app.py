@@ -1,8 +1,10 @@
 """
 AuditFlow - Agentic & Explainable Claims Processing
 5-Page App: Home, Process Claims, Claim History, Performance Analytics, Policy Library
-Clean, warm light cream/beige theme for accessibility
+Dark mode optimized for modern UI
 """
+
+VERSION = "v1.2.0-dark"  # Version tracker for deployment verification
 
 import os
 import base64
@@ -625,13 +627,13 @@ if 'current_claim_id' not in st.session_state: st.session_state.current_claim_id
 
 # SIDEBAR
 with st.sidebar:
-    st.markdown("""
-    <div style="padding: 20px 16px; border-bottom: 1px solid #E7E5E4;">
+    st.markdown(f"""
+    <div style="padding: 20px 16px; border-bottom: 1px solid #2A2A2A;">
         <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #0D9488, #2563EB); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 12px;">AF</div>
+            <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #14B8A6, #3B82F6); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 12px;">AF</div>
             <div>
-                <div style="font-size: 16px; font-weight: 700; color: #1C1917;">AuditFlow</div>
-                <div style="font-size: 10px; color: #A8A29E;">AI Claims Processing</div>
+                <div style="font-size: 16px; font-weight: 700; color: #F5F5F5;">AuditFlow</div>
+                <div style="font-size: 10px; color: #6B6B6B;">AI Claims Processing • {VERSION}</div>
             </div>
         </div>
     </div>
