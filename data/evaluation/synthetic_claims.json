@@ -1,0 +1,141 @@
+{
+    "description": "Synthetic claims for testing AuditFlow regional routing and policy analysis",
+    "version": "1.0",
+    "claims": [
+        {
+            "id": "SG-001",
+            "text": "Water leak from my air-con unit in Bedok caused damage to my living room floor and the ceiling of the unit below.",
+            "expected_region": "SG",
+            "expected_category": "Home",
+            "expected_decision": "COVERED",
+            "key_policy": "MSIG Enhanced HomePlus",
+            "notes": "Clear SG home claim - water damage from AC unit"
+        },
+        {
+            "id": "SG-002",
+            "text": "A pipe burst in my Tampines HDB flat bathroom, flooding the entire unit. My furniture and electronics were damaged.",
+            "expected_region": "SG",
+            "expected_category": "Home",
+            "expected_decision": "COVERED",
+            "key_policy": "MSIG Enhanced HomePlus",
+            "notes": "Bursting of pipes - core coverage in MSIG policy"
+        },
+        {
+            "id": "SG-003",
+            "text": "Theft at my Orchard Road condo. Someone broke in through the window and stole my laptop and jewelry.",
+            "expected_region": "SG",
+            "expected_category": "Home",
+            "expected_decision": "COVERED",
+            "key_policy": "MSIG Enhanced HomePlus",
+            "notes": "Forcible entry theft - covered under Section 1"
+        },
+        {
+            "id": "SG-004",
+            "text": "My washing machine broke down after 2 years. It just stopped working one day with no external cause.",
+            "expected_region": "SG",
+            "expected_category": "Home",
+            "expected_decision": "NOT_COVERED",
+            "key_policy": "MSIG Enhanced HomePlus",
+            "notes": "Mechanical breakdown exclusion applies"
+        },
+        {
+            "id": "SG-005",
+            "text": "Mould has been growing on my Woodlands flat walls for several months. Now it's spread to multiple rooms.",
+            "expected_region": "SG",
+            "expected_category": "Home",
+            "expected_decision": "NOT_COVERED",
+            "key_policy": "MSIG Enhanced HomePlus",
+            "notes": "Gradual deterioration/mould exclusion applies"
+        },
+        {
+            "id": "SG-006",
+            "text": "Fire broke out in my Clementi apartment kitchen due to unattended cooking. The kitchen is completely destroyed.",
+            "expected_region": "SG",
+            "expected_category": "Home",
+            "expected_decision": "COVERED",
+            "key_policy": "MSIG Enhanced HomePlus",
+            "notes": "Fire damage - primary peril coverage"
+        },
+        {
+            "id": "SG-007",
+            "text": "Ceiling leak from upstairs neighbor in my Ang Mo Kio flat during the renovation works they were doing.",
+            "expected_region": "SG",
+            "expected_category": "Home",
+            "expected_decision": "NEEDS_REVIEW",
+            "key_policy": "MSIG Enhanced HomePlus",
+            "notes": "Third party liability issue - may need to claim against neighbor"
+        },
+        {
+            "id": "AU-001",
+            "text": "Machinery breakdown at my Sydney warehouse. The main conveyor belt motor failed suddenly causing production halt.",
+            "expected_region": "AU",
+            "expected_category": "Business",
+            "expected_decision": "COVERED",
+            "key_policy": "Zurich Business Insurance",
+            "notes": "Machinery breakdown - covered under Section 2.4"
+        },
+        {
+            "id": "AU-002",
+            "text": "Fire damage to my Melbourne business premises. An electrical fault in the storage room destroyed inventory worth AUD 50,000.",
+            "expected_region": "AU",
+            "expected_category": "Business",
+            "expected_decision": "COVERED",
+            "key_policy": "Zurich Business Insurance",
+            "notes": "Property damage from fire - covered"
+        },
+        {
+            "id": "AU-003",
+            "text": "Customer slipped and fell in my Brisbane retail shop. They are now claiming compensation for injuries.",
+            "expected_region": "AU",
+            "expected_category": "Business",
+            "expected_decision": "COVERED",
+            "key_policy": "Zurich Business Insurance",
+            "notes": "Public liability claim - covered under Section 4"
+        },
+        {
+            "id": "AU-004",
+            "text": "Our Perth factory had to close for 3 weeks due to COVID-19 government restrictions. Seeking business interruption claim.",
+            "expected_region": "AU",
+            "expected_category": "Business",
+            "expected_decision": "NOT_COVERED",
+            "key_policy": "Zurich Business Insurance",
+            "notes": "Pandemic exclusion applies"
+        },
+        {
+            "id": "AU-005",
+            "text": "Ransomware attack on our Adelaide office systems. All company data was encrypted and we paid AUD 100,000 ransom.",
+            "expected_region": "AU",
+            "expected_category": "Business",
+            "expected_decision": "NOT_COVERED",
+            "key_policy": "Zurich Business Insurance",
+            "notes": "Cyber attack exclusion - cyber cover needed separately"
+        },
+        {
+            "id": "AU-006",
+            "text": "Storm damage to the roof of my Canberra warehouse. Heavy rain caused flooding inside, damaging stock.",
+            "expected_region": "AU",
+            "expected_category": "Business",
+            "expected_decision": "COVERED",
+            "key_policy": "Zurich Business Insurance",
+            "notes": "Storm/weather damage to property - covered"
+        },
+        {
+            "id": "AU-007",
+            "text": "The refrigeration unit in my Gold Coast restaurant failed due to wear and tear. All food stock spoiled.",
+            "expected_region": "AU",
+            "expected_category": "Business",
+            "expected_decision": "PARTIAL",
+            "key_policy": "Zurich Business Insurance",
+            "notes": "Wear and tear excluded, but spoiled stock may be covered"
+        },
+        {
+            "id": "AU-008",
+            "text": "A forklift in my Hobart warehouse accidentally damaged a customer's goods stored with us. They are claiming AUD 25,000.",
+            "expected_region": "AU",
+            "expected_category": "Business",
+            "expected_decision": "COVERED",
+            "key_policy": "Zurich Business Insurance",
+            "notes": "Property damage liability - covered under Section 4"
+        }
+    ]
+}

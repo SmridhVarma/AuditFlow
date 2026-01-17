@@ -1,0 +1,116 @@
+version: '3.8'
+
+services:
+  # PostgreSQL with pgvector extension
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: auditflow-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-auditflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-auditflow_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-auditflow}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U auditflow" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - auditflow-network
+
+  # Service A: Intent & Regional Router
+  router:
+    build:
+      context: ./services/router
+      dockerfile: Dockerfile
+    container_name: auditflow-router
+    ports:
+      - "8001:8000"
+    environment:
+      - LOG_LEVEL=INFO
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - auditflow-network
+
+  # Service B: Contextual RAG Engine
+  rag:
+    build:
+      context: ./services/rag
+      dockerfile: Dockerfile
+    container_name: auditflow-rag
+    ports:
+      - "8002:8000"
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-auditflow}:${POSTGRES_PASSWORD:-auditflow_secret}@db:5432/${POSTGRES_DB:-auditflow}
+      - LOG_LEVEL=INFO
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - auditflow-network
+
+  # Service C: Agentic Reasoning Core
+  agent:
+    build:
+      context: ./services/agent
+      dockerfile: Dockerfile
+    container_name: auditflow-agent
+    ports:
+      - "8003:8000"
+    environment:
+      - RAG_SERVICE_URL=http://rag:8000
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - LLM_MODEL=${LLM_MODEL:-gemini-2.0-flash}
+      - LOG_LEVEL=INFO
+    depends_on:
+      - rag
+    networks:
+      - auditflow-network
+
+  # Service D: Audit Reporter
+  reporter:
+    build:
+      context: ./services/reporter
+      dockerfile: Dockerfile
+    container_name: auditflow-reporter
+    ports:
+      - "8004:8000"
+    environment:
+      - LOG_LEVEL=INFO
+    networks:
+      - auditflow-network
+
+  # Frontend: Streamlit Claims Command Center
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: auditflow-frontend
+    ports:
+      - "8501:8501"
+    environment:
+      - ROUTER_SERVICE_URL=http://router:8000
+      - RAG_SERVICE_URL=http://rag:8000
+      - AGENT_SERVICE_URL=http://agent:8000
+      - REPORTER_SERVICE_URL=http://reporter:8000
+    depends_on:
+      - router
+      - rag
+      - agent
+      - reporter
+    networks:
+      - auditflow-network
+
+volumes:
+  pgdata:
+
+
+networks:
+  auditflow-network:
+    driver: bridge
