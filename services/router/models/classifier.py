@@ -69,24 +69,34 @@ class RegionalClassifier:
     }
     
     def __init__(self, model_name: str = "distilbert-base-uncased"):
-        """Initialize the classifier with DistilBERT"""
+        """Initialize the classifier with optional transformer model"""
+        import os
+        
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         logger.info(f"Using device: {self.device}")
         
-        # Load zero-shot classification pipeline
-        try:
-            self.classifier = pipeline(
-                "zero-shot-classification",
-                model="facebook/bart-large-mnli",
-                device=0 if self.device == "cuda" else -1,
-            )
-            self.model_loaded = True
-            logger.info("Zero-shot classifier loaded successfully")
-        except Exception as e:
-            logger.warning(f"Failed to load transformer model: {e}")
-            logger.warning("Falling back to keyword-only classification")
+        # Check if we should use lightweight mode (for Railway free tier)
+        use_lightweight = os.getenv("LIGHTWEIGHT_MODE", "true").lower() == "true"
+        
+        if use_lightweight:
+            logger.info("Using lightweight keyword-only classification (LIGHTWEIGHT_MODE=true)")
             self.classifier = None
             self.model_loaded = False
+        else:
+            # Load zero-shot classification pipeline (requires ~2GB RAM)
+            try:
+                self.classifier = pipeline(
+                    "zero-shot-classification",
+                    model="typeform/distilbert-base-uncased-mnli",  # Much smaller than BART
+                    device=0 if self.device == "cuda" else -1,
+                )
+                self.model_loaded = True
+                logger.info("Zero-shot classifier loaded successfully")
+            except Exception as e:
+                logger.warning(f"Failed to load transformer model: {e}")
+                logger.warning("Falling back to keyword-only classification")
+                self.classifier = None
+                self.model_loaded = False
     
     def _keyword_match(self, text: str) -> Tuple[Optional[str], Optional[str], float, str]:
         """
