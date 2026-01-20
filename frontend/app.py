@@ -738,6 +738,8 @@ elif st.session_state.page == 'process':
             if st.button("🔄 Clear", use_container_width=True):
                 st.session_state.claim_text = ""
                 st.session_state.analysis_result = None
+                st.session_state.pdf_data = None
+                st.session_state.pdf_claim_id = None
                 st.rerun()
         
         if analyze_clicked:
@@ -842,30 +844,55 @@ elif st.session_state.page == 'process':
             
             # Download Report Button
             st.markdown("##### 📥 Download Report")
+            
+            # Initialize session state for PDF if not exists
+            if 'pdf_data' not in st.session_state:
+                st.session_state.pdf_data = None
+            if 'pdf_claim_id' not in st.session_state:
+                st.session_state.pdf_claim_id = None
+            
             dl_col1, dl_col2 = st.columns(2)
             with dl_col1:
-                if st.button("📄 Download PDF Report", use_container_width=True, type="primary"):
-                    try:
-                        report_data = {
-                            "claim_id": result["claim_id"],
-                            "claim_text": result["claim_text"],
-                            "region": result["region"],
-                            "category": result["category"],
-                            "decision": final_decision,
-                            "confidence": result["confidence"],
-                            "summary": result["summary"],
-                            "reasoning_trace": [{"step_number": r["step"], "step_type": r["type"], "content": r["content"]} for r in result.get("reasoning", [])],
-                            "evidence": [],
-                            "exclusions_found": [f["reason"] for f in active_flags],
-                            "limits_found": []
-                        }
-                        response = requests.post(f"{REPORTER_URL}/generate-report", json=report_data, timeout=10)
-                        if response.status_code == 200:
-                            st.download_button("⬇️ Save PDF", data=response.content, file_name=f"audit_report_{result['claim_id']}.pdf", mime="application/pdf")
-                        else:
-                            st.error(f"Report service error: {response.status_code}")
-                    except Exception as e:
-                        st.error(f"Could not connect to Reporter service. Make sure it's running. Error: {str(e)[:50]}")
+                # Check if we already have the PDF for this claim
+                if st.session_state.pdf_data and st.session_state.pdf_claim_id == result["claim_id"]:
+                    st.download_button(
+                        "⬇️ Save PDF Report",
+                        data=st.session_state.pdf_data,
+                        file_name=f"audit_report_{result['claim_id']}.pdf",
+                        mime="application/pdf",
+                        use_container_width=True,
+                        type="primary"
+                    )
+                else:
+                    if st.button("📄 Generate PDF Report", use_container_width=True, type="primary"):
+                        try:
+                            with st.spinner("Generating PDF report..."):
+                                report_data = {
+                                    "claim_id": result["claim_id"],
+                                    "claim_text": result["claim_text"],
+                                    "region": result["region"],
+                                    "category": result["category"],
+                                    "decision": final_decision,
+                                    "confidence": result["confidence"],
+                                    "summary": result["summary"],
+                                    "reasoning_trace": [{"step_number": r["step"], "step_type": r["type"], "content": r["content"]} for r in result.get("reasoning", [])],
+                                    "evidence": [],
+                                    "exclusions_found": [f["reason"] for f in active_flags],
+                                    "limits_found": []
+                                }
+                                response = requests.post(f"{REPORTER_URL}/generate-report", json=report_data, timeout=30)
+                                if response.status_code == 200:
+                                    st.session_state.pdf_data = response.content
+                                    st.session_state.pdf_claim_id = result["claim_id"]
+                                    st.rerun()
+                                else:
+                                    st.error(f"Report service error: {response.status_code} - {response.text[:100]}")
+                        except requests.exceptions.ConnectionError:
+                            st.error("❌ Could not connect to Reporter service. Is it running?")
+                        except requests.exceptions.Timeout:
+                            st.error("❌ Reporter service timed out. Try again.")
+                        except Exception as e:
+                            st.error(f"Error generating report: {str(e)[:100]}")
             
             # Override Decision Module
             st.markdown("---")
