@@ -2,10 +2,10 @@
 AuditFlow - Agentic & Explainable Claims Processing
 5-Page App: Home, Process Claims, Claim History, Performance Analytics, Policy Library
 Light mode optimized for modern UI
-Cache bust: 2026-01-21T02:30
+Cache bust: 2026-01-21T02:35
 """
 
-VERSION = "v1.3.3-pdf-fix"  # Bumped for PDF schema fix
+VERSION = "v1.3.4-evidence-text"  # Final fix: Display evidence text
 
 import os
 import base64
@@ -779,7 +779,8 @@ elif st.session_state.page == 'process':
                 # Determine policy based on text
                 policy_name = "MSIG Enhanced HomePlus" if "SG" == claim_region else "Zurich Business Insurance"
                 section_cited = "Section 3.2 (Water Damage)" if "water" in claim_text.lower() or "leak" in claim_text.lower() else "Section 5.1 (Fire & Perils)" if "fire" in claim_text.lower() else "Section 2.4 (Machinery)" 
-                
+                section_text = "Accidental discharge or overflow of water from plumbing, heating, or air conditioning systems." if "water" in claim_text.lower() or "leak" in claim_text.lower() else "Loss or damage caused by fire, lightning, explosion, or aircraft impact." if "fire" in claim_text.lower() else "Sudden and unforeseen physical loss or damage to machinery and equipment."
+
                 analysis_result = {
                     "claim_id": claim_id,
                     "claim_text": claim_text,
@@ -789,7 +790,7 @@ elif st.session_state.page == 'process':
                     "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     "region": claim_region,
                     "category": claim_category,
-                    "citation": {"policy": policy_name, "section": section_cited},
+                    "citation": {"policy": policy_name, "section": section_cited, "text": section_text},
                     "summary": f"Claim analyzed based on policy coverage criteria. Decision: {expected} with {confidence*100:.1f}% confidence.",
                     "events": [
                         {"time": "00:00.12", "component": "ROUTER", "icon": "🔀", "action": "Route Request", "details": f"Routing to {claim_region} / {claim_category} handler"},
@@ -802,7 +803,7 @@ elif st.session_state.page == 'process':
                     "reasoning": [
                         {"step": 1, "type": "THINK", "content": f"I need to analyze this claim about '{claim_text[:50]}...' First, I'll identify the incident type. Keywords suggest this is related to {'water damage' if 'water' in claim_text.lower() or 'leak' in claim_text.lower() or 'pipe' in claim_text.lower() else 'fire/property damage' if 'fire' in claim_text.lower() else 'general property damage'}. The location indicators point to {claim_region} region."},
                         {"step": 2, "type": "ACT", "content": f"Calling RAG tool: search_policy_clauses(region='{claim_region}', category='{claim_category}', query='coverage for {claim_text[:30]}...')"},
-                        {"step": 3, "type": "OBSERVE", "content": f"Retrieved {policy_name} policy document. Found relevant section: {section_cited}. This section covers: {'Accidental discharge or overflow of water from plumbing, heating, or air conditioning systems' if 'water' in claim_text.lower() else 'Loss or damage caused by fire, lightning, explosion' if 'fire' in claim_text.lower() else 'Breakdown of machinery and equipment'}."},
+                        {"step": 3, "type": "OBSERVE", "content": f"Retrieved {policy_name} policy document. Found relevant section: {section_cited}. This section covers: {section_text}"},
                         {"step": 4, "type": "THINK", "content": f"Now I need to check for exclusions. Scanning {section_cited} for exclusion clauses... {'⚠️ Found potential exclusion: Gradual deterioration and wear-and-tear are NOT covered. Mould damage typically falls under this exclusion.' if 'mould' in claim_text.lower() else '⚠️ Found potential exclusion: Cyber attacks and ransomware are NOT covered under standard property policies.' if 'ransomware' in claim_text.lower() else '✓ No applicable exclusions found for this incident type.'}"},
                         {"step": 5, "type": "THINK", "content": f"Evaluating coverage limits from {policy_name}... Standard coverage limit for {claim_category} claims is ${'50,000' if claim_category == 'home' else '500,000'} SGD/AUD. Based on the claim description, this appears to be within normal limits."},
                         {"step": 6, "type": "DECIDE", "content": f"Based on my analysis: (1) Incident type matches covered perils in {section_cited}, (2) {'Exclusion applies - gradual damage/mould is excluded' if 'mould' in claim_text.lower() else 'Exclusion applies - cyber attacks not covered' if 'ransomware' in claim_text.lower() else 'No exclusions apply'}, (3) Within coverage limits. FINAL DECISION: {expected} with {confidence*100:.1f}% confidence."},
@@ -855,7 +856,8 @@ elif st.session_state.page == 'process':
             # Policy Citations
             if result.get("citation"):
                 st.markdown("##### 📋 Policy Evidence")
-                st.success(f"**{result['citation']['policy']}**\n\nCited Section: *{result['citation']['section']}*")
+                citation = result["citation"]
+                st.success(f"**{citation['policy']}**\n\nCited Section: *{citation['section']}*\n\n> \"{citation.get('text', 'Text unavailable')}\"")
             
             # Agent Reasoning
             with st.expander("🧠 Agent Reasoning & Explanations", expanded=False):
@@ -898,7 +900,7 @@ elif st.session_state.page == 'process':
                                     "summary": result["summary"],
                                     "reasoning_trace": [{"step_number": r["step"], "step_type": r["type"], "content": r["content"]} for r in result.get("reasoning", [])],
                                     "evidence": [{
-                                        "content": result['citation']['section'],  # Using section text as content since we don't have raw text
+                                        "content": result['citation'].get('text', result['citation']['section']), 
                                         "policy_name": result['citation']['policy'],
                                         "section": result['citation']['section'],
                                         "relevance_score": 1.0
