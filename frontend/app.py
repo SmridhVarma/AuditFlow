@@ -2,10 +2,10 @@
 AuditFlow - Agentic & Explainable Claims Processing
 5-Page App: Home, Process Claims, Claim History, Performance Analytics, Policy Library
 Light mode optimized for modern UI
-Cache bust: 2026-01-21T02:02
+Cache bust: 2026-01-21T02:20
 """
 
-VERSION = "v1.3.1-fixes"  # Bumped for PDF/Override/Claims verification
+VERSION = "v1.3.2-evidence"  # Bumped for policy evidence fixes
 
 import os
 import base64
@@ -789,6 +789,7 @@ elif st.session_state.page == 'process':
                     "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     "region": claim_region,
                     "category": claim_category,
+                    "citation": {"policy": policy_name, "section": section_cited},
                     "summary": f"Claim analyzed based on policy coverage criteria. Decision: {expected} with {confidence*100:.1f}% confidence.",
                     "events": [
                         {"time": "00:00.12", "component": "ROUTER", "icon": "🔀", "action": "Route Request", "details": f"Routing to {claim_region} / {claim_category} handler"},
@@ -851,6 +852,10 @@ elif st.session_state.page == 'process':
                 st.markdown("##### 🚩 Flagging Criteria")
                 for flag in active_flags:
                     st.warning(f"**{flag['criteria']}**: {flag['reason']}")
+            # Policy Citations
+            if result.get("citation"):
+                st.markdown("##### 📋 Policy Evidence")
+                st.success(f"**{result['citation']['policy']}**\n\nCited Section: *{result['citation']['section']}*")
             
             # Agent Reasoning
             with st.expander("🧠 Agent Reasoning & Explanations", expanded=False):
@@ -892,7 +897,7 @@ elif st.session_state.page == 'process':
                                     "confidence": result["confidence"],
                                     "summary": result["summary"],
                                     "reasoning_trace": [{"step_number": r["step"], "step_type": r["type"], "content": r["content"]} for r in result.get("reasoning", [])],
-                                    "evidence": [],
+                                    "evidence": [f"{result['citation']['policy']} - {result['citation']['section']}"] if result.get("citation") else [],
                                     "exclusions_found": [f["reason"] for f in active_flags],
                                     "limits_found": []
                                 }
