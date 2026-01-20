@@ -2,10 +2,10 @@
 AuditFlow - Agentic & Explainable Claims Processing
 5-Page App: Home, Process Claims, Claim History, Performance Analytics, Policy Library
 Light mode optimized for modern UI
-Cache bust: 2026-01-21T02:20
+Cache bust: 2026-01-21T02:30
 """
 
-VERSION = "v1.3.2-evidence"  # Bumped for policy evidence fixes
+VERSION = "v1.3.3-pdf-fix"  # Bumped for PDF schema fix
 
 import os
 import base64
@@ -897,7 +897,12 @@ elif st.session_state.page == 'process':
                                     "confidence": result["confidence"],
                                     "summary": result["summary"],
                                     "reasoning_trace": [{"step_number": r["step"], "step_type": r["type"], "content": r["content"]} for r in result.get("reasoning", [])],
-                                    "evidence": [f"{result['citation']['policy']} - {result['citation']['section']}"] if result.get("citation") else [],
+                                    "evidence": [{
+                                        "content": result['citation']['section'],  # Using section text as content since we don't have raw text
+                                        "policy_name": result['citation']['policy'],
+                                        "section": result['citation']['section'],
+                                        "relevance_score": 1.0
+                                    }] if result.get("citation") else [],
                                     "exclusions_found": [f["reason"] for f in active_flags],
                                     "limits_found": []
                                 }
