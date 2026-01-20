@@ -15,10 +15,16 @@ from pathlib import Path
 import streamlit as st
 import requests
 
-# Service URLs
-ROUTER_URL = os.getenv("ROUTER_SERVICE_URL", "http://localhost:8001")
-AGENT_URL = os.getenv("AGENT_SERVICE_URL", "http://localhost:8003")
-REPORTER_URL = os.getenv("REPORTER_SERVICE_URL", "http://localhost:8004")
+# Service URLs - ensure they have proper scheme
+def ensure_url_scheme(url, default_scheme="https"):
+    """Ensure URL has a scheme (http/https)"""
+    if url and not url.startswith(("http://", "https://")):
+        return f"{default_scheme}://{url}"
+    return url
+
+ROUTER_URL = ensure_url_scheme(os.getenv("ROUTER_SERVICE_URL", "http://localhost:8001"))
+AGENT_URL = ensure_url_scheme(os.getenv("AGENT_SERVICE_URL", "http://localhost:8003"))
+REPORTER_URL = ensure_url_scheme(os.getenv("REPORTER_SERVICE_URL", "http://localhost:8004"))
 
 st.set_page_config(page_title="AuditFlow", page_icon="🔷", layout="wide", initial_sidebar_state="expanded")
 
@@ -592,14 +598,14 @@ POLICIES = [
 
 ]
 
-# SAMPLES - Using fuller text from synthetic_claims.json
+# SAMPLES - Realistic email-style claim submissions
 SAMPLES = [
-    {"id": "SG-001", "text": "Water leak from my air-con unit in Bedok caused damage to my living room floor and the ceiling of the unit below.", "exp": "COVERED"},
-    {"id": "SG-002", "text": "A pipe burst in my Tampines HDB flat bathroom, flooding the entire unit. My furniture and electronics were damaged.", "exp": "COVERED"},
-    {"id": "AU-001", "text": "Machinery breakdown at my Sydney warehouse. The main conveyor belt motor failed suddenly causing production halt.", "exp": "COVERED"},
-    {"id": "AU-002", "text": "Fire damage to my Melbourne business premises. An electrical fault in the storage room destroyed inventory worth AUD 50,000.", "exp": "COVERED"},
-    {"id": "AU-005", "text": "Ransomware attack on our Adelaide office systems. All company data was encrypted and we paid AUD 100,000 ransom.", "exp": "NOT_COVERED"},
-    {"id": "SG-005", "text": "Mould has been growing on my Woodlands flat walls for several months. Now it's spread to multiple rooms.", "exp": "NOT_COVERED"},
+    {"id": "SG-001", "text": "Dear Claims Team, I am writing to report water damage at my residence. On Monday morning around 6am, I discovered a major water leak originating from my air-conditioning unit in the master bedroom. The water had been leaking overnight and caused significant damage to my living room parquet flooring (approximately 15 sqm affected). The leak also seeped through to the ceiling of my downstairs neighbor at Block 123 Bedok North Ave 3 #04-567. I have attached photos of the damage and the repair quote from the HDB contractor. Policy number: HP-2024-88821. Please advise on the next steps for processing this claim. Thank you.", "exp": "COVERED"},
+    {"id": "SG-002", "text": "Hi, I need to file an urgent claim for flood damage at my Tampines HDB flat. Yesterday evening at around 8pm, a pipe burst in my bathroom wall causing a massive flood throughout my entire 4-room unit. The water damaged my living room sofa set (purchased 6 months ago for $3,200), my Samsung 65-inch TV ($1,899), and several electronic appliances in the kitchen. My neighbor alerted me when water started coming through their ceiling. The town council emergency team came and shut off the water supply. I have the plumber's report confirming it was a pipe failure, not user negligence. Address: Blk 456 Tampines Street 42 #08-234. Please process this claim urgently as my family is currently staying with relatives.", "exp": "COVERED"},
+    {"id": "AU-001", "text": "To Whom It May Concern, I am lodging a business interruption claim for machinery breakdown at our Sydney distribution center. On 15th January at approximately 2:30pm, the main conveyor belt motor in our warehouse (Model: Siemens 3-Phase 15kW) failed without warning, causing an immediate halt to all packing and shipping operations. Our maintenance contractor has confirmed the motor suffered a catastrophic bearing failure. We have been unable to fulfill orders for the past 3 days, resulting in significant revenue loss and customer complaints. The replacement motor has been ordered but will take 7-10 business days to arrive. We request expedited processing of this claim given the ongoing business impact. Facility: 45 Industrial Drive, Mascot NSW 2020. ABN: 12 345 678 901.", "exp": "COVERED"},
+    {"id": "AU-002", "text": "URGENT CLAIM - Fire Damage at Commercial Premises. At approximately 11:45pm on Tuesday night, a fire broke out in the storage room at the rear of our retail shop at 789 Collins Street, Melbourne VIC 3000. The fire brigade attended and contained the blaze, but not before significant damage was caused to our inventory. Preliminary assessment shows approximately $50,000 AUD worth of stock destroyed, plus structural damage to the storage area walls and ceiling. The MFB fire investigation report indicates the cause was an electrical fault in the lighting circuit. The shop is currently closed pending structural assessment. I need to claim for: 1) Stock replacement, 2) Structural repairs, 3) Business interruption during closure. Photos and fire report attached.", "exp": "COVERED"},
+    {"id": "AU-005", "text": "Security Incident Report - Ransomware Attack. I am filing this claim following a devastating cybersecurity incident at our Adelaide office on 10th January. At 6:30am, our IT team discovered that all company servers and workstations had been encrypted by ransomware (identified as LockBit 3.0). The attackers demanded 5 Bitcoin (approximately AUD $320,000) for the decryption key. After consulting with our cybersecurity advisors and legal team, and finding our backups were also compromised, we made the difficult decision to pay a negotiated ransom of AUD $100,000. We have the cryptocurrency transaction records and communication logs with the threat actors. Our systems have since been restored but we incurred significant costs for incident response, forensic investigation, and business interruption. Requesting claim assessment under our business insurance policy.", "exp": "NOT_COVERED"},
+    {"id": "SG-005", "text": "Good afternoon, I would like to make a claim for mould remediation at my flat. For the past several months, I have noticed persistent mould growth on the walls of my Woodlands flat (Blk 789 Woodlands Drive 50 #12-345). Despite regular cleaning, the mould keeps returning and has now spread from the master bedroom to the living room and second bedroom. My children have been experiencing respiratory issues which I believe are related to the mould. I called a professional mould assessment company who confirmed the mould has penetrated deep into the walls and estimated remediation costs of $8,000-$12,000. They mentioned it's likely due to poor ventilation and condensation buildup over time. I am hoping this is covered under my home insurance policy HP-2023-55443. Please let me know what documentation you need from me.", "exp": "NOT_COVERED"},
 ]
 
 # Session state
@@ -904,38 +910,38 @@ elif st.session_state.page == 'process':
                         except Exception as e:
                             st.error(f"Error: {str(e)[:80]}")
             
-            # Override Decision Module
+            # Override Decision Module - Hidden behind expander
             st.markdown("---")
-            st.markdown("##### ⚖️ Override Decision")
             
             if result.get("overridden"):
                 override = result["override_info"]
-                st.info(f"✅ Decision overridden from **{override['original_decision']}** to **{override['new_decision']}** by {override['adjuster']} on {override['timestamp']}")
+                st.success(f"✅ Decision overridden from **{override['original_decision']}** to **{override['new_decision']}** by {override['adjuster']}")
                 st.caption(f"Reason: {override['reason']} | Notes: {override['notes']}")
             else:
-                with st.form("override_form"):
+                with st.expander("⚖️ Override Decision", expanded=False):
                     st.caption("Override the AI decision if manual review indicates otherwise")
-                    override_reason = st.selectbox("Override Reason", ["Manager Approval", "Additional Documentation", "Customer Exception", "Policy Clarification", "Error Correction", "Other"])
-                    new_decision = st.selectbox("New Decision", ["COVERED", "NOT_COVERED", "PARTIAL", "NEEDS_REVIEW"])
-                    adjuster_notes = st.text_area("Adjuster Notes", placeholder="Enter justification for override...", height=80)
-                    
-                    if st.form_submit_button("✓ Confirm Override", type="primary"):
-                        if adjuster_notes.strip():
-                            override_entry = {
-                                "claim_id": result["claim_id"],
-                                "original_decision": result["decision"],
-                                "new_decision": new_decision,
-                                "reason": override_reason,
-                                "notes": adjuster_notes,
-                                "adjuster": "Current User",
-                                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                            }
-                            st.session_state.analysis_result["overridden"] = True
-                            st.session_state.analysis_result["override_info"] = override_entry
-                            st.session_state.override_logs.append(override_entry)
-                            st.rerun()
-                        else:
-                            st.warning("Please enter adjuster notes to justify the override.")
+                    with st.form("override_form"):
+                        override_reason = st.selectbox("Override Reason", ["Manager Approval", "Additional Documentation", "Customer Exception", "Policy Clarification", "Error Correction", "Other"])
+                        new_decision = st.selectbox("New Decision", ["COVERED", "NOT_COVERED", "PARTIAL", "NEEDS_REVIEW"])
+                        adjuster_notes = st.text_area("Adjuster Notes", placeholder="Enter justification for override...", height=80)
+                        
+                        if st.form_submit_button("✓ Confirm Override", type="primary"):
+                            if adjuster_notes.strip():
+                                override_entry = {
+                                    "claim_id": result["claim_id"],
+                                    "original_decision": result["decision"],
+                                    "new_decision": new_decision,
+                                    "reason": override_reason,
+                                    "notes": adjuster_notes,
+                                    "adjuster": "Current User",
+                                    "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                                }
+                                st.session_state.analysis_result["overridden"] = True
+                                st.session_state.analysis_result["override_info"] = override_entry
+                                st.session_state.override_logs.append(override_entry)
+                                st.rerun()
+                            else:
+                                st.warning("Please enter adjuster notes to justify the override.")
             
             # Override Logs
             if st.session_state.override_logs:
