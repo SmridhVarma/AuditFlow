@@ -2,10 +2,10 @@
 AuditFlow - Agentic & Explainable Claims Processing
 5-Page App: Home, Process Claims, Claim History, Performance Analytics, Policy Library
 Light mode optimized for modern UI
-Cache bust: 2026-01-21T01:47
+Cache bust: 2026-01-21T02:02
 """
 
-VERSION = "v1.3.0-light"  # Updated version for cache bust
+VERSION = "v1.3.1-fixes"  # Bumped for PDF/Override/Claims verification
 
 import os
 import base64
