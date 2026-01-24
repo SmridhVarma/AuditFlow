@@ -741,7 +741,7 @@ elif st.session_state.page == 'process':
     
     with col1:
         st.markdown("#### 📝 Claim Description")
-        claim_text = st.text_area("", value=st.session_state.claim_text, height=120, placeholder="Describe the claim incident in detail, or select a sample claim below...", label_visibility="collapsed", key="claim_input")
+        claim_text = st.text_area("Claim Description", value=st.session_state.claim_text, height=120, placeholder="Describe the claim incident in detail, or select a sample claim below...", label_visibility="collapsed", key="claim_input")
         
         analyze_col, clear_col = st.columns([3, 1])
         with analyze_col:
