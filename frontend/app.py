@@ -2,10 +2,10 @@
 AuditFlow - Agentic & Explainable Claims Processing
 5-Page App: Home, Process Claims, Claim History, Performance Analytics, Policy Library
 Light mode optimized for modern UI
-Cache bust: 2026-01-21T02:35
+Cache bust: 2026-01-24T15:38
 """
 
-VERSION = "v1.3.4-evidence-text"  # Final fix: Display evidence text
+VERSION = "v1.3.6-css-fix"  # Fixed white-on-white text input
 
 import os
 import base64
@@ -110,9 +110,9 @@ st.markdown("""
     
     /* Form elements - FIXED CONTRAST */
     .stTextArea textarea {
-        background: var(--bg-card) !important;
-        border: 1px solid var(--border) !important;
-        color: var(--text-primary) !important;
+        background: #FFFFFF !important;
+        border: 1px solid #E2E8F0 !important;
+        color: #0F172A !important;
         border-radius: 10px !important;
         font-size: 14px !important;
     }
